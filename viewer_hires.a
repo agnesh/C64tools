@@ -1,0 +1,63 @@
+
+; 6502 assembly code for C64 hires bitmap mode image viewer
+; using ACME cross assembler syntax
+
+!cpu 6510
+!to "viewer_hires.prg",cbm
+
+
+; Autostart header (BASIC byte code)
+
+* = $0801
+
+   ; Pointer to next line of code ($080b, after the null byte)
+   !byte $0b, $08                      
+   
+   ; BASIC line number (10)
+   !byte $0a, $00                      
+   
+   ; SYS command token
+   !byte $9e                           
+   
+   ; The decimal start address as a PETSCII string ($1000)
+   !text "4096"                        
+   
+   ; Null byte, end of line
+   !byte $00                           
+   
+   ; Pointer to next line ($0000: end of program)
+   !byte $00, $00                      
+
+
+; Bitmap data location
+
+* = $2000                              
+   !binary "bitmap_test.bin", 8000, 0
+
+
+; Color data location (screen memory)
+
+* = $0c00  
+   !binary "colors_test.bin", 1000, 0  
+
+
+; Start of program, specified in BASIC header
+
+* = $1000
+
+   lda #$0b          ; Dark gray
+   sta $d020         ; Border color
+
+   lda $d011
+   ora #$20          ; Set bitmap mode
+   sta $d011
+
+   lda $d018
+   ora #$38          ; Set screen memory to $0c00, bitmap location to $2000
+   sta $d018
+
+main:
+
+   ; loop forever to keep program from terminating
+
+   jmp main
